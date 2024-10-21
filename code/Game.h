@@ -15,6 +15,8 @@ private:
 	sf::Sprite backgroundSprite;
 	sf::Image windowIcon;
 
+	std::pair<int, int> getClickedCell();
+
 	void processEvents();
 	void update();
 	void render();
