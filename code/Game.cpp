@@ -6,7 +6,7 @@ Game::Game() : grid_textureSize(300), window(sf::VideoMode(300, 300), "fxx") {
     background.loadFromFile("images/grid.png");
     backgroundSprite.setTexture(background);
     x_o_s.resize(3, std::vector<sf::Sprite>(3));
-    cell_occupation_state.resize(3, std::vector<int>(3, 0));
+    state.resize(3, std::vector<int>(3, 0));
     x_o_texture.loadFromFile("images/x_o.png");
     fillWithX_O();
 }
@@ -17,7 +17,6 @@ void Game::run() {
         processEvents();
         update();
         render();
-
     }
 }
 
@@ -30,11 +29,13 @@ void Game::processEvents() {
             break;
         case sf::Event::MouseButtonPressed:
             if (event.mouseButton.button == sf::Mouse::Left) {
-                std::pair<int, int> cell_coordinates = getClickedCell();
-                if (!cell_occupation_state[cell_coordinates.first][cell_coordinates.second]) {
-                    fillIndividualCell(2, cell_coordinates);
-                    cell_occupation_state[cell_coordinates.first][cell_coordinates.second] = 1;
-                    std::cout << cell_coordinates.first << " " << cell_coordinates.second << std::endl;
+                if (!terminal(state) && current_player == 1) {
+                    std::pair<int, int> cell_coordinates = getClickedCell();
+                    if (!state[cell_coordinates.first][cell_coordinates.second]) {
+                        fillIndividualCell('x', cell_coordinates);
+                        state[cell_coordinates.first][cell_coordinates.second] = 1;
+                        current_player = 2;
+                    }
                 }
             }
             break;
@@ -43,7 +44,29 @@ void Game::processEvents() {
 }
 
 void Game::update() {
-
+    if (!terminal(state) && current_player == 2) {
+        int new_min_value = 100, min_value = 100;
+        std::vector<std::vector<int>> possible_state = state;
+        std::vector<std::pair<int, int>> possible_actions = actions(state);
+        std::pair<int, int> optimal_coord;
+        for (auto i : possible_actions) {
+            possible_state[i.first][i.second] = 2;
+            new_min_value = minimax(possible_state);
+            if (new_min_value < min_value) {
+                min_value = new_min_value;
+                optimal_coord = i;
+                std::cout << optimal_coord.first << " " << optimal_coord.second << " ";
+            }
+            possible_state[i.first][i.second] = 0;
+        }
+        fillIndividualCell('o', optimal_coord);
+        state[optimal_coord.first][optimal_coord.second] = 2;
+        current_player = 1;
+    }
+    else if (terminal(state) && !end_alert) {
+        std::cout << "end";
+        end_alert = 1;
+    }
 }
 
 void Game::render() {
@@ -82,17 +105,155 @@ void Game::fillWithX_O() {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             x_o_s[i][j].setTexture(x_o_texture);
-            x_o_s[i][j].setPosition(27 + j * (81 + 3), 27 + i * (81 + 3));
-            x_o_s[i][j].setTextureRect(sf::IntRect(0, 0, 81, 81));
+            x_o_s[i][j].setPosition(27 + j * (x_o_textureSize + gridPaddings), 27 + i * (x_o_textureSize + gridPaddings));
+            fillIndividualCell('e', { i, j });
         }
     }
 }
 
-void Game::fillIndividualCell(int figure, std::pair<int, int> cell_coordinates) {
-    if (figure == 1) { // x
+void Game::fillIndividualCell(char mark, std::pair<int, int> cell_coordinates) {
+    if (mark == 'x') {
         x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 1*x_o_textureSize, x_o_textureSize, x_o_textureSize));
     }
-    if (figure == 2) { // x
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 2 * x_o_textureSize, x_o_textureSize, x_o_textureSize));
+    else if (mark == 'o') {
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 2*x_o_textureSize, x_o_textureSize, x_o_textureSize));
     }
+    else {
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 0, x_o_textureSize, x_o_textureSize));
+    }
+}
+
+//Max is 1, Min is 2
+
+int Game::minimax(std::vector<std::vector<int>> curr_state) {
+    if (terminal(curr_state))
+        return value(curr_state);
+    if (player(curr_state) == 1) {
+        value_ = -100;
+        for (auto a : actions(curr_state)) {
+            value_ = std::max(value_, minimax(result(curr_state, a, 1)));
+        }
+        return value_;
+    }
+    else if (player(curr_state) == 2) {
+        value_ = 100;
+        for (auto a : actions(curr_state)) {
+            value_ = std::min(value_, minimax(result(curr_state, a, 2)));
+        }
+        return value_;
+    }
+}
+
+bool Game::terminal(std::vector<std::vector<int>> curr_state) {
+    bool isFull = true;
+    int counter_x_3_row = 0;
+    int counter_x_3_col = 0;
+    int counter_o_3_row = 0;
+    int counter_o_3_col = 0;
+
+    for (int i = 0; i < board_size; i++) {
+        counter_x_3_row = 0;
+        counter_x_3_col = 0;
+        counter_o_3_row = 0;
+        counter_o_3_col = 0;
+
+        for (int j = 0; j < board_size; j++) {
+
+            if (curr_state[i][j] == 1) counter_x_3_row++;
+            if (curr_state[i][j] == 2) counter_o_3_row++;
+
+            if (curr_state[j][i] == 1) counter_x_3_col++;
+            if (curr_state[j][i] == 2) counter_o_3_col++;
+
+            if (curr_state[i][j] == 0) isFull = false;
+        }
+        if (counter_x_3_row == 3 || counter_x_3_col == 3) return true;
+        if (counter_o_3_row == 3 || counter_o_3_col == 3) return true;
+    }
+
+    int counter_x_3_diag1 = 0, counter_o_3_diag1 = 0;
+    int counter_x_3_diag2 = 0, counter_o_3_diag2 = 0;
+    for (int i = 0; i < board_size; i++) {
+        if (curr_state[i][i] == 1) counter_x_3_diag1++;
+        if (curr_state[i][i] == 2) counter_o_3_diag1++;
+
+        if (curr_state[i][board_size - i - 1] == 1) counter_x_3_diag2++;
+        if (curr_state[i][board_size - i - 1] == 2) counter_o_3_diag2++;
+    }
+
+    if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) return true;
+    if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) return true;
+    return isFull;
+}
+
+int Game::value(std::vector<std::vector<int>> curr_state) {
+    bool isFull = true;
+    int counter_x_3_row = 0;
+    int counter_x_3_col = 0;
+    int counter_o_3_row = 0;
+    int counter_o_3_col = 0;
+
+    for (int i = 0; i < board_size; i++) {
+        counter_x_3_row = 0;
+        counter_x_3_col = 0;
+        counter_o_3_row = 0;
+        counter_o_3_col = 0;
+
+        for (int j = 0; j < board_size; j++) {
+
+            if (curr_state[i][j] == 1) counter_x_3_row++;
+            if (curr_state[i][j] == 2) counter_o_3_row++;
+
+            if (curr_state[j][i] == 1) counter_x_3_col++;
+            if (curr_state[j][i] == 2) counter_o_3_col++;
+
+            if (curr_state[i][j] == 0) isFull = false;
+        }
+        if (counter_x_3_row == 3 || counter_x_3_col == 3) return max_;
+        if (counter_o_3_row == 3 || counter_o_3_col == 3) return min_;
+    }
+
+    int counter_x_3_diag1 = 0, counter_o_3_diag1 = 0;
+    int counter_x_3_diag2 = 0, counter_o_3_diag2 = 0;
+    for (int i = 0; i < board_size; i++) {
+        if (curr_state[i][i] == 1) counter_x_3_diag1++;
+        if (curr_state[i][i] == 2) counter_o_3_diag1++;
+
+        if (curr_state[i][board_size - i - 1] == 1) counter_x_3_diag2++;
+        if (curr_state[i][board_size - i - 1] == 2) counter_o_3_diag2++;
+    }
+
+    if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) return max_;
+    if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) return min_;
+    if (isFull) return 0;
+    return -100;
+}
+int Game::player(std::vector<std::vector<int>> curr_state) {
+    int counter_x = 0;
+    int counter_o = 0;
+    for (int i = 0; i < board_size; i++) {
+
+        for (int j = 0; j < board_size; j++) {
+
+            if (curr_state[i][j] == 1) counter_x++;
+            if (curr_state[i][j] == 2) counter_o++;
+        }
+    }
+    if (counter_x == counter_o) return 1;
+    return 2;
+}
+
+std::vector<std::pair<int, int>> Game::actions(std::vector<std::vector<int>> curr_state) {
+    std::vector<std::pair<int, int>> actions;
+    for (int i = 0; i < board_size; i++) {
+        for (int j = 0; j < board_size; j++) {
+            if (curr_state[i][j] == 0) actions.push_back({ i, j });
+        }
+    }
+    return actions;
+}
+std::vector<std::vector<int>> Game::result(std::vector<std::vector<int>> curr_state, std::pair<int, int> act, int x_o) {
+    if (x_o == 1) curr_state[act.first][act.second] = 1;
+    if (x_o == 2) curr_state[act.first][act.second] = 2;
+    return curr_state;
 }
