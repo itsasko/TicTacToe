@@ -35,7 +35,7 @@ private:
 
 	int minimax(std::vector<std::vector<int>> curr_state);
 
-	int value_, current_player = 1;
+	int current_player = 1;
 	bool terminal(std::vector<std::vector<int>> curr_state);
 	int value(std::vector<std::vector<int>> curr_state);
 	int player(std::vector<std::vector<int>> curr_state);

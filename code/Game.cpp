@@ -55,7 +55,6 @@ void Game::update() {
             if (new_min_value < min_value) {
                 min_value = new_min_value;
                 optimal_coord = i;
-                std::cout << optimal_coord.first << " " << optimal_coord.second << " ";
             }
             possible_state[i.first][i.second] = 0;
         }
@@ -129,14 +128,14 @@ int Game::minimax(std::vector<std::vector<int>> curr_state) {
     if (terminal(curr_state))
         return value(curr_state);
     if (player(curr_state) == 1) {
-        value_ = -100;
+        int value_ = -100;
         for (auto a : actions(curr_state)) {
             value_ = std::max(value_, minimax(result(curr_state, a, 1)));
         }
         return value_;
     }
     else if (player(curr_state) == 2) {
-        value_ = 100;
+        int value_ = 100;
         for (auto a : actions(curr_state)) {
             value_ = std::min(value_, minimax(result(curr_state, a, 2)));
         }
@@ -226,7 +225,6 @@ int Game::value(std::vector<std::vector<int>> curr_state) {
     if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) return max_;
     if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) return min_;
     if (isFull) return 0;
-    return -100;
 }
 int Game::player(std::vector<std::vector<int>> curr_state) {
     int counter_x = 0;
