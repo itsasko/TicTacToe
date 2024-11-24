@@ -48,6 +48,8 @@ private:
 	void update();
 	void render();
 
+	enum class TerminateValues;
+
 };
 
 #endif

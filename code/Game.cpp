@@ -11,6 +11,12 @@ Game::Game() : grid_textureSize(300), window(sf::VideoMode(300, 300), "fxx") {
     fillWithX_O();
 }
 
+enum class Game::TerminateValues {
+    MAX = 1,
+    ZERO = 0,
+    MIN = -1
+};
+
 void Game::run() {
     // Game loop
     while (window.isOpen()) {
@@ -186,6 +192,7 @@ bool Game::terminal(std::vector<std::vector<int>> curr_state) {
 }
 
 int Game::value(std::vector<std::vector<int>> curr_state) {
+    TerminateValues sum;
     bool isFull = true;
     int counter_x_3_row = 0;
     int counter_x_3_col = 0;
@@ -208,8 +215,8 @@ int Game::value(std::vector<std::vector<int>> curr_state) {
 
             if (curr_state[i][j] == 0) isFull = false;
         }
-        if (counter_x_3_row == 3 || counter_x_3_col == 3) return max_;
-        if (counter_o_3_row == 3 || counter_o_3_col == 3) return min_;
+        if (counter_x_3_row == 3 || counter_x_3_col == 3) sum = TerminateValues::MAX;
+        if (counter_o_3_row == 3 || counter_o_3_col == 3) sum = TerminateValues::MIN;
     }
 
     int counter_x_3_diag1 = 0, counter_o_3_diag1 = 0;
@@ -222,9 +229,10 @@ int Game::value(std::vector<std::vector<int>> curr_state) {
         if (curr_state[i][board_size - i - 1] == 2) counter_o_3_diag2++;
     }
 
-    if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) return max_;
-    if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) return min_;
-    if (isFull) return 0;
+    if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) sum = TerminateValues::MAX;
+    if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) sum = TerminateValues::MIN;
+    if (isFull) sum = TerminateValues::ZERO;
+    return static_cast<int>(sum);
 }
 int Game::player(std::vector<std::vector<int>> curr_state) {
     int counter_x = 0;
