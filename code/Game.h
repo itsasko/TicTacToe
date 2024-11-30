@@ -35,7 +35,10 @@ private:
 
 	int minimax(std::vector<std::vector<int>> curr_state);
 
-	int current_player = 1;
+	enum class TerminateValues;
+	enum class CellValues;
+
+	CellValues current_player;
 	bool terminal(std::vector<std::vector<int>> curr_state);
 	int value(std::vector<std::vector<int>> curr_state);
 	int player(std::vector<std::vector<int>> curr_state);
@@ -47,8 +50,6 @@ private:
 	void processEvents();
 	void update();
 	void render();
-
-	enum class TerminateValues;
 
 };
 

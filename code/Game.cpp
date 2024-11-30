@@ -17,7 +17,14 @@ enum class Game::TerminateValues {
     MIN = -1
 };
 
+enum class Game::CellValues {
+    EMPTY,
+    MARK_X,
+    MARK_O
+};
+
 void Game::run() {
+    current_player = CellValues::MARK_X;
     // Game loop
     while (window.isOpen()) {
         processEvents();
@@ -35,12 +42,12 @@ void Game::processEvents() {
             break;
         case sf::Event::MouseButtonPressed:
             if (event.mouseButton.button == sf::Mouse::Left) {
-                if (!terminal(state) && current_player == 1) {
+                if (!terminal(state) && current_player == CellValues::MARK_X) {
                     std::pair<int, int> cell_coordinates = getClickedCell();
                     if (!state[cell_coordinates.first][cell_coordinates.second]) {
                         fillIndividualCell('x', cell_coordinates);
                         state[cell_coordinates.first][cell_coordinates.second] = 1;
-                        current_player = 2;
+                        current_player = CellValues::MARK_O;
                     }
                 }
             }
@@ -50,7 +57,7 @@ void Game::processEvents() {
 }
 
 void Game::update() {
-    if (!terminal(state) && current_player == 2) {
+    if (!terminal(state) && current_player == CellValues::MARK_O) {
         int new_min_value = 100, min_value = 100;
         std::vector<std::vector<int>> possible_state = state;
         std::vector<std::pair<int, int>> possible_actions = actions(state);
@@ -66,7 +73,7 @@ void Game::update() {
         }
         fillIndividualCell('o', optimal_coord);
         state[optimal_coord.first][optimal_coord.second] = 2;
-        current_player = 1;
+        current_player = CellValues::MARK_X;
     }
     else if (terminal(state) && !end_alert) {
         std::cout << "end";
