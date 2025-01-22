@@ -10,7 +10,7 @@
 class Game
 {
 public:
-	Game();
+	Game(int board_size);
 	void run();
 private:
 	sf::RenderWindow window;
@@ -21,13 +21,15 @@ private:
 	std::vector<std::vector<int>> state;
 	sf::Texture x_o_texture;
 
-	const int board_size = 3;
+	int board_size = 3;
 
 	int max_ = 1, min_ = -1;
 
-	const int grid_textureSize = 300;
-	const int x_o_textureSize = 81;
-	const int gridPaddings = 3;
+	int grid_textureSize = 300;
+	int cellSize = 81;
+	int gridPaddings = 3;
+	int gridStartX = 27;
+	int gridStartY = 27;
 
 	std::pair<int, int> getClickedCell();
 	void fillWithX_O();
@@ -46,6 +48,7 @@ private:
 	std::vector<std::vector<int>> result(std::vector<std::vector<int>> curr_state, std::pair<int, int> act, int x_o);
 	
 	bool end_alert = 0;
+	int grid_size = 3;
 
 	void processEvents();
 	void update();

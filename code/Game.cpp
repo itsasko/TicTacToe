@@ -1,12 +1,12 @@
 #include "Game.h"
 
-Game::Game() : grid_textureSize(300), window(sf::VideoMode(300, 300), "fxx") {
+Game::Game(int board_size) : grid_textureSize(board_size*100), window(sf::VideoMode(board_size * 100, board_size * 100), "fxx") {
     windowIcon.loadFromFile("images/icon.png");
     window.setIcon(80, 80, windowIcon.getPixelsPtr());
     background.loadFromFile("images/grid.png");
     backgroundSprite.setTexture(background);
-    x_o_s.resize(3, std::vector<sf::Sprite>(3));
-    state.resize(3, std::vector<int>(3, 0));
+    x_o_s.resize(board_size, std::vector<sf::Sprite>(board_size));
+    state.resize(board_size, std::vector<int>(board_size, 0));
     x_o_texture.loadFromFile("images/x_o.png");
     fillWithX_O();
 }
@@ -95,11 +95,6 @@ void Game::render() {
 std::pair<int, int> Game::getClickedCell() {
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
-    int gridStartX = 27;
-    int gridStartY = 27;
-    int cellSize = 81;
-    int padding = 3;
-
     int adjustedX = mousePos.x - gridStartX;
     int adjustedY = mousePos.y - gridStartY;
 
@@ -107,17 +102,17 @@ std::pair<int, int> Game::getClickedCell() {
         return { -1, -1 };
     }
 
-    int row = adjustedY / (cellSize + padding);
-    int col = adjustedX / (cellSize + padding);
+    int row = adjustedY / (cellSize + gridPaddings);
+    int col = adjustedX / (cellSize + gridPaddings);
 
     return { row, col };
 }
 
 void Game::fillWithX_O() {
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < board_size; i++) {
+        for (int j = 0; j < board_size; j++) {
             x_o_s[i][j].setTexture(x_o_texture);
-            x_o_s[i][j].setPosition(27 + j * (x_o_textureSize + gridPaddings), 27 + i * (x_o_textureSize + gridPaddings));
+            x_o_s[i][j].setPosition(gridStartX + j * (cellSize + gridPaddings), gridStartY + i * (cellSize + gridPaddings));
             fillIndividualCell('e', { i, j });
         }
     }
@@ -125,13 +120,13 @@ void Game::fillWithX_O() {
 
 void Game::fillIndividualCell(char mark, std::pair<int, int> cell_coordinates) {
     if (mark == 'x') {
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 1*x_o_textureSize, x_o_textureSize, x_o_textureSize));
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 1*cellSize, cellSize, cellSize));
     }
     else if (mark == 'o') {
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 2*x_o_textureSize, x_o_textureSize, x_o_textureSize));
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 2*cellSize, cellSize, cellSize));
     }
     else {
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 0, x_o_textureSize, x_o_textureSize));
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 0, cellSize, cellSize));
     }
 }
 
@@ -158,86 +153,86 @@ int Game::minimax(std::vector<std::vector<int>> curr_state) {
 
 bool Game::terminal(std::vector<std::vector<int>> curr_state) {
     bool isFull = true;
-    int counter_x_3_row = 0;
-    int counter_x_3_col = 0;
-    int counter_o_3_row = 0;
-    int counter_o_3_col = 0;
+    int counter_x_row = 0;
+    int counter_x_col = 0;
+    int counter_o_row = 0;
+    int counter_o_col = 0;
 
     for (int i = 0; i < board_size; i++) {
-        counter_x_3_row = 0;
-        counter_x_3_col = 0;
-        counter_o_3_row = 0;
-        counter_o_3_col = 0;
+        counter_x_row = 0;
+        counter_x_col = 0;
+        counter_o_row = 0;
+        counter_o_col = 0;
 
         for (int j = 0; j < board_size; j++) {
 
-            if (curr_state[i][j] == 1) counter_x_3_row++;
-            if (curr_state[i][j] == 2) counter_o_3_row++;
+            if (curr_state[i][j] == 1) counter_x_row++;
+            if (curr_state[i][j] == 2) counter_o_row++;
 
-            if (curr_state[j][i] == 1) counter_x_3_col++;
-            if (curr_state[j][i] == 2) counter_o_3_col++;
+            if (curr_state[j][i] == 1) counter_x_col++;
+            if (curr_state[j][i] == 2) counter_o_col++;
 
             if (curr_state[i][j] == 0) isFull = false;
         }
-        if (counter_x_3_row == 3 || counter_x_3_col == 3) return true;
-        if (counter_o_3_row == 3 || counter_o_3_col == 3) return true;
+        if (counter_x_row == board_size || counter_x_col == board_size) return true;
+        if (counter_o_row == board_size || counter_o_col == board_size) return true;
     }
 
-    int counter_x_3_diag1 = 0, counter_o_3_diag1 = 0;
-    int counter_x_3_diag2 = 0, counter_o_3_diag2 = 0;
+    int counter_x_diag1 = 0, counter_o_diag1 = 0;
+    int counter_x_diag2 = 0, counter_o_diag2 = 0;
     for (int i = 0; i < board_size; i++) {
-        if (curr_state[i][i] == 1) counter_x_3_diag1++;
-        if (curr_state[i][i] == 2) counter_o_3_diag1++;
+        if (curr_state[i][i] == 1) counter_x_diag1++;
+        if (curr_state[i][i] == 2) counter_o_diag1++;
 
-        if (curr_state[i][board_size - i - 1] == 1) counter_x_3_diag2++;
-        if (curr_state[i][board_size - i - 1] == 2) counter_o_3_diag2++;
+        if (curr_state[i][board_size - i - 1] == 1) counter_x_diag2++;
+        if (curr_state[i][board_size - i - 1] == 2) counter_o_diag2++;
     }
 
-    if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) return true;
-    if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) return true;
+    if (counter_x_diag1 == board_size || counter_x_diag2 == board_size) return true;
+    if (counter_o_diag1 == board_size || counter_o_diag2 == board_size) return true;
     return isFull;
 }
 
 int Game::value(std::vector<std::vector<int>> curr_state) {
     TerminateValues sum;
     bool isFull = true;
-    int counter_x_3_row = 0;
-    int counter_x_3_col = 0;
-    int counter_o_3_row = 0;
-    int counter_o_3_col = 0;
+    int counter_x_row = 0;
+    int counter_x_col = 0;
+    int counter_o_row = 0;
+    int counter_o_col = 0;
 
     for (int i = 0; i < board_size; i++) {
-        counter_x_3_row = 0;
-        counter_x_3_col = 0;
-        counter_o_3_row = 0;
-        counter_o_3_col = 0;
+        counter_x_row = 0;
+        counter_x_col = 0;
+        counter_o_row = 0;
+        counter_o_col = 0;
 
         for (int j = 0; j < board_size; j++) {
 
-            if (curr_state[i][j] == 1) counter_x_3_row++;
-            if (curr_state[i][j] == 2) counter_o_3_row++;
+            if (curr_state[i][j] == 1) counter_x_row++;
+            if (curr_state[i][j] == 2) counter_o_row++;
 
-            if (curr_state[j][i] == 1) counter_x_3_col++;
-            if (curr_state[j][i] == 2) counter_o_3_col++;
+            if (curr_state[j][i] == 1) counter_x_col++;
+            if (curr_state[j][i] == 2) counter_o_col++;
 
             if (curr_state[i][j] == 0) isFull = false;
         }
-        if (counter_x_3_row == 3 || counter_x_3_col == 3) sum = TerminateValues::MAX;
-        if (counter_o_3_row == 3 || counter_o_3_col == 3) sum = TerminateValues::MIN;
+        if (counter_x_row == board_size || counter_x_col == board_size) sum = TerminateValues::MAX;
+        if (counter_o_row == board_size || counter_o_col == board_size) sum = TerminateValues::MIN;
     }
 
-    int counter_x_3_diag1 = 0, counter_o_3_diag1 = 0;
-    int counter_x_3_diag2 = 0, counter_o_3_diag2 = 0;
+    int counter_x_diag1 = 0, counter_o_diag1 = 0;
+    int counter_x_diag2 = 0, counter_o_diag2 = 0;
     for (int i = 0; i < board_size; i++) {
-        if (curr_state[i][i] == 1) counter_x_3_diag1++;
-        if (curr_state[i][i] == 2) counter_o_3_diag1++;
+        if (curr_state[i][i] == 1) counter_x_diag1++;
+        if (curr_state[i][i] == 2) counter_o_diag1++;
 
-        if (curr_state[i][board_size - i - 1] == 1) counter_x_3_diag2++;
-        if (curr_state[i][board_size - i - 1] == 2) counter_o_3_diag2++;
+        if (curr_state[i][board_size - i - 1] == 1) counter_x_diag2++;
+        if (curr_state[i][board_size - i - 1] == 2) counter_o_diag2++;
     }
 
-    if (counter_x_3_diag1 == 3 || counter_x_3_diag2 == 3) sum = TerminateValues::MAX;
-    if (counter_o_3_diag1 == 3 || counter_o_3_diag2 == 3) sum = TerminateValues::MIN;
+    if (counter_x_diag1 == board_size || counter_x_diag2 == board_size) sum = TerminateValues::MAX;
+    if (counter_o_diag1 == board_size || counter_o_diag2 == board_size) sum = TerminateValues::MIN;
     if (isFull) sum = TerminateValues::ZERO;
     return static_cast<int>(sum);
 }
