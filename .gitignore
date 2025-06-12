@@ -1,0 +1,23 @@
+# Visual Studio
+.vs/
+*.VC.db
+*.sdf
+*.opensdf
+*.user
+
+# Build
+binaries/
+*.obj
+*.pdb
+*.ilk
+*.log
+*.exe
+
+# Backup
+*.bak
+*.tmp
+
+# OS junk
+.DS_Store
+Thumbs.db
+
