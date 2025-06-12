@@ -1,9 +1,23 @@
 #include "Game.h"
 
-Game::Game(int board_size) : grid_textureSize(board_size*100), window(sf::VideoMode(board_size * 100, board_size * 100), "fxx") {
+Game::Game(int board_size_) : grid_textureSize(board_size_ *100), window(sf::VideoMode(board_size_ * 100, board_size_ * 100), "tic-tac-toe") {
     windowIcon.loadFromFile("images/icon.png");
+    board_size = board_size_;
     window.setIcon(80, 80, windowIcon.getPixelsPtr());
-    background.loadFromFile("images/grid.png");
+    switch (board_size){
+    case 3:
+        background.loadFromFile("images/grid.png");
+        break;
+    case 4:
+        background.loadFromFile("images/grid4.png");
+        grid_textureSize = 400;
+        cellSize = 92;
+        gridPaddings = 4;
+        gridStartX = 10;
+        gridStartY = 10;
+        break;
+
+    }   
     backgroundSprite.setTexture(background);
     x_o_s.resize(board_size, std::vector<sf::Sprite>(board_size));
     state.resize(board_size, std::vector<int>(board_size, 0));
@@ -120,13 +134,13 @@ void Game::fillWithX_O() {
 
 void Game::fillIndividualCell(char mark, std::pair<int, int> cell_coordinates) {
     if (mark == 'x') {
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 1*cellSize, cellSize, cellSize));
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 1* x_o_textureSize, x_o_textureSize, x_o_textureSize));
     }
     else if (mark == 'o') {
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 2*cellSize, cellSize, cellSize));
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 2* x_o_textureSize, x_o_textureSize, x_o_textureSize));
     }
     else {
-        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 0, cellSize, cellSize));
+        x_o_s[cell_coordinates.first][cell_coordinates.second].setTextureRect(sf::IntRect(0, 0, x_o_textureSize, x_o_textureSize));
     }
 }
 

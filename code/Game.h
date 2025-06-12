@@ -25,6 +25,7 @@ private:
 
 	int max_ = 1, min_ = -1;
 
+	int x_o_textureSize = 81;
 	int grid_textureSize = 300;
 	int cellSize = 81;
 	int gridPaddings = 3;
