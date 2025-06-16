@@ -24,7 +24,6 @@ A simple and beautiful desktop Tic Tac Toe game developed in **C++** using **SFM
 
 ## 🚀 How to Run
 
-Clone the repository:
-   ```bash
-   git clone https://github.com/itsasko/TicTacToe.git
-   cd TicTacToe
+1. Go to the latest release and download the archived folder.
+2. Unzip.
+3. Run TicTacToe.exe.
