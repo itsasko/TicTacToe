@@ -24,6 +24,6 @@ A simple and beautiful desktop Tic Tac Toe game developed in **C++** using **SFM
 
 ## 🚀 How to Run
 
-1. Go to the latest release and download the archived folder.
-2. Unzip.
-3. Run TicTacToe.exe.
+1. Go to the latest release and download the archived folder
+2. Unzip
+3. Run TicTacToe.exe
