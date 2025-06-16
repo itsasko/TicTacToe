@@ -2,6 +2,7 @@
 
 A simple and beautiful desktop Tic Tac Toe game developed in **C++** using **SFML**.  
 
+![TicTacToe Screenshot](images/screenshot.png)
 ---
 
 ## 🧠 Features
@@ -18,12 +19,6 @@ A simple and beautiful desktop Tic Tac Toe game developed in **C++** using **SFM
 - **C++17**
 - **SFML** (Simple and Fast Multimedia Library)
 - Visual Studio 2022
-
----
-
-## 🖼️ Screenshot
-
-![TicTacToe Screenshot](images/screenshot.png)
 
 ---
 
